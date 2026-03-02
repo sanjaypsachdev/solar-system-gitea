@@ -1,5 +1,5 @@
 pipeline {
-    agent { label 'worker1' }
+    agent { label 'worker' }
 
     environment {
         NPM_CONFIG_CACHE = "${WORKSPACE}/.npm"
