@@ -87,6 +87,16 @@ pipeline {
                         junit allowEmptyResults: true, stdioRetention: '', testResults: 'test-results.xml'
                     }
                 }
+                stage('Code Coverage') {
+                    steps {
+                        withCredentials([usernamePassword(credentialsId: 'mongodb-atlas-creds', usernameVariable: 'MONGO_USERNAME', passwordVariable: 'MONGO_PASSWORD')]) { 
+                            sh '''
+                                npm run coverage
+                            '''
+                        }  
+                        publishHTML([allowMissing: true, alwaysLinkToLastBuild: true, keepAll: true, reportDir: 'coverage/lcov-report', reportFiles: 'index.html', reportName: 'Code Coverage Report', reportTitles: '', useWrapperFileDirectly: true])
+                    }
+                }
             }
         }
     }
