@@ -83,7 +83,7 @@ pipeline {
         stage('Unit Testing') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'mongodb-atlas-creds', usernameVariable: 'MONGO_USERNAME', passwordVariable: 'MONGO_PASSWORD')]) {
-                    sh '''
+                    sh """
                         docker run --rm \
                             --dns 172.31.0.2 \
                             -v "${WORKSPACE}:/app:z" \
@@ -95,7 +95,7 @@ pipeline {
                             -e MONGO_PASSWORD="${MONGO_PASSWORD}" \
                             node:18-alpine3.17 \
                             sh -c "npm test"
-                    '''
+                    """
                 }
                 junit allowEmptyResults: true, testResults: 'test-results.xml'
             }
@@ -104,7 +104,7 @@ pipeline {
         stage('Code Coverage') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'mongodb-atlas-creds', usernameVariable: 'MONGO_USERNAME', passwordVariable: 'MONGO_PASSWORD')]) {
-                    sh '''
+                    sh """
                         docker run --rm \
                             --dns 172.31.0.2 \
                             -v "${WORKSPACE}:/app:z" \
@@ -116,7 +116,7 @@ pipeline {
                             -e MONGO_PASSWORD="${MONGO_PASSWORD}" \
                             node:18-alpine3.17 \
                             sh -c "npm run coverage"
-                    '''
+                    """
                 }
                 publishHTML([allowMissing: true, alwaysLinkToLastBuild: true, keepAll: true, reportDir: 'coverage/lcov-report', reportFiles: 'index.html', reportName: 'Code Coverage Report', reportTitles: '', useWrapperFileDirectly: true])
             }
