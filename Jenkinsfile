@@ -94,21 +94,10 @@ pipeline {
             }
         }
 
-        stage('Seed Local MongoDB') {
+        stage('Seed MongoDB') {
             steps {
                 sh '''
-                    docker run --rm --network solar-net mongo:6 mongosh mongodb://mongo:27017/superData --eval "
-                        db.planets.insertMany([
-                            {id:1,name:\"Mercury\",description:\"\",image:\"\",velocity:\"\",distance:\"\"},
-                            {id:2,name:\"Venus\",description:\"\",image:\"\",velocity:\"\",distance:\"\"},
-                            {id:3,name:\"Earth\",description:\"\",image:\"\",velocity:\"\",distance:\"\"},
-                            {id:4,name:\"Mars\",description:\"\",image:\"\",velocity:\"\",distance:\"\"},
-                            {id:5,name:\"Jupiter\",description:\"\",image:\"\",velocity:\"\",distance:\"\"},
-                            {id:6,name:\"Saturn\",description:\"\",image:\"\",velocity:\"\",distance:\"\"},
-                            {id:7,name:\"Uranus\",description:\"\",image:\"\",velocity:\"\",distance:\"\"},
-                            {id:8,name:\"Neptune\",description:\"\",image:\"\",velocity:\"\",distance:\"\"}
-                        ]);
-                    "
+                    docker run --rm --network solar-net mongo:6 mongosh mongodb://mongo:27017/superData --eval 'db.planets.insertMany([{id:1,name:"Mercury",description:"",image:"",velocity:"",distance:""},{id:2,name:"Venus",description:"",image:"",velocity:"",distance:""},{id:3,name:"Earth",description:"",image:"",velocity:"",distance:""},{id:4,name:"Mars",description:"",image:"",velocity:"",distance:""},{id:5,name:"Jupiter",description:"",image:"",velocity:"",distance:""},{id:6,name:"Saturn",description:"",image:"",velocity:"",distance:""},{id:7,name:"Uranus",description:"",image:"",velocity:"",distance:""},{id:8,name:"Neptune",description:"",image:"",velocity:"",distance:""}])'
                 '''
             }
         }
