@@ -18,38 +18,34 @@ pipeline {
             }
         }
 
-        stage('Dependency Scanning') {
-            parallel {
-                stage('NPM Dependency Audit') {
-                    steps {
-                        sh '''
-                            npm audit --audit-level=critical
-                            echo $?
-                        '''
-                    }
-                }
+        stage('NPM Dependency Audit') {
+            steps {
+                sh '''
+                    npm audit --audit-level=critical
+                    echo $?
+                '''
+            }
+        }
 
-                stage('OWASP Dependency Check') {
-                    agent { label 'worker1' }
-                    steps {
-                        // NVD API key from Jenkins credential ID 'nvd-api-key' (Secret text)
-                        dependencyCheck(
-                            additionalArguments: '''
-                                --scan \'./\'
-                                --out \'./\'
-                                --format \'ALL\'
-                                --prettyPrint''',
-                            odcInstallation: 'OWASP-DepCheck-12',
-                            nvdCredentialsId: 'nvd-api-key'
-                        )
+        stage('OWASP Dependency Check') {
+            agent { label 'worker1' }
+            steps {
+                // NVD API key from Jenkins credential ID 'nvd-api-key' (Secret text)
+                dependencyCheck(
+                    additionalArguments: '''
+                        --scan \'./\'
+                        --out \'./\'
+                        --format \'ALL\'
+                        --prettyPrint''',
+                    odcInstallation: 'OWASP-DepCheck-12',
+                    nvdCredentialsId: 'nvd-api-key'
+                )
 
-                        dependencyCheckPublisher(
-                            failedTotalCritical: 1,
-                            pattern: 'dependency-check-report.xml',
-                            stopBuild: true
-                        )
-                    }
-                }
+                dependencyCheckPublisher(
+                    failedTotalCritical: 1,
+                    pattern: 'dependency-check-report.xml',
+                    stopBuild: true
+                )
             }
         }
 
