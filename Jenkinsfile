@@ -34,6 +34,7 @@ pipeline {
                         docker {
                             image 'owasp/dependency-check:latest'
                             label 'worker'
+                            args '--entrypoint ""'
                         }
                     }
                     steps {
