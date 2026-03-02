@@ -79,21 +79,39 @@ pipeline {
                 }
                 stage('Unit Testing') {
                     steps {
-                        withCredentials([usernamePassword(credentialsId: 'mongodb-atlas-creds', usernameVariable: 'MONGO_USERNAME', passwordVariable: 'MONGO_PASSWORD')]) { 
+                        withCredentials([usernamePassword(credentialsId: 'mongodb-atlas-creds', usernameVariable: 'MONGO_USERNAME', passwordVariable: 'MONGO_PASSWORD')]) {
                             sh '''
-                                npm test
+                                docker run --rm \
+                                    -v "${WORKSPACE}:/app:z" \
+                                    -v "${WORKSPACE}/.npm:/tmp/npm:z" \
+                                    -w /app \
+                                    -e NPM_CONFIG_CACHE=/tmp/npm \
+                                    -e MONGO_URI="${MONGO_URI}" \
+                                    -e MONGO_USERNAME="${MONGO_USERNAME}" \
+                                    -e MONGO_PASSWORD="${MONGO_PASSWORD}" \
+                                    node:18-alpine3.17 \
+                                    sh -c "npm install --no-audit && npm test"
                             '''
                         }
-                        junit allowEmptyResults: true, stdioRetention: '', testResults: 'test-results.xml'
+                        junit allowEmptyResults: true, testResults: 'test-results.xml'
                     }
                 }
                 stage('Code Coverage') {
                     steps {
-                        withCredentials([usernamePassword(credentialsId: 'mongodb-atlas-creds', usernameVariable: 'MONGO_USERNAME', passwordVariable: 'MONGO_PASSWORD')]) { 
+                        withCredentials([usernamePassword(credentialsId: 'mongodb-atlas-creds', usernameVariable: 'MONGO_USERNAME', passwordVariable: 'MONGO_PASSWORD')]) {
                             sh '''
-                                npm run coverage
+                                docker run --rm \
+                                    -v "${WORKSPACE}:/app:z" \
+                                    -v "${WORKSPACE}/.npm:/tmp/npm:z" \
+                                    -w /app \
+                                    -e NPM_CONFIG_CACHE=/tmp/npm \
+                                    -e MONGO_URI="${MONGO_URI}" \
+                                    -e MONGO_USERNAME="${MONGO_USERNAME}" \
+                                    -e MONGO_PASSWORD="${MONGO_PASSWORD}" \
+                                    node:18-alpine3.17 \
+                                    sh -c "npm install --no-audit && npm run coverage"
                             '''
-                        }  
+                        }
                         publishHTML([allowMissing: true, alwaysLinkToLastBuild: true, keepAll: true, reportDir: 'coverage/lcov-report', reportFiles: 'index.html', reportName: 'Code Coverage Report', reportTitles: '', useWrapperFileDirectly: true])
                     }
                 }
