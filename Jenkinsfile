@@ -7,6 +7,10 @@ pipeline {
         }
     }
 
+    environment {
+        NPM_CONFIG_CACHE = "${WORKSPACE}/.npm"
+    }
+
     stages {
         stage('Installing Dependencies') {
             steps {
