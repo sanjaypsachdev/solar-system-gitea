@@ -34,18 +34,25 @@ pipeline {
                     steps {
                         withCredentials([string(credentialsId: 'nvd-api-key', variable: 'NVD_API_KEY')]) {
                             sh '''
-                                echo "Starting OWASP Dependency Check (first run may take 15-30 min for NVD update)..."
+                                set -e
+                                NVD_DATA_DIR="${NVD_DATA_DIR:-$HOME/dependency-check-data}"
+                                mkdir -p "$NVD_DATA_DIR"
+                                echo "Starting OWASP Dependency Check (first run may take 15-30 min for NVD update; data cached in $NVD_DATA_DIR)..."
                                 docker run --rm \
                                     -u $(id -u):$(id -g) \
                                     -v "${WORKSPACE}:/src:z" \
+                                    -v "${NVD_DATA_DIR}:/usr/share/dependency-check/data:z" \
                                     -e NVD_API_KEY="${NVD_API_KEY}" \
                                     owasp/dependency-check:latest \
                                     --scan /src \
                                     --project "Solar System" \
                                     --format ALL \
                                     --out /src \
+                                    --log /src/dependency-check.log \
                                     --prettyPrint \
                                     --nvdApiKey "${NVD_API_KEY}"
+                                echo "OWASP Dependency Check completed. Log excerpt:"
+                                tail -80 dependency-check.log
                             '''
                         }
                         dependencyCheckPublisher(
