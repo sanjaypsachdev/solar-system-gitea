@@ -84,7 +84,7 @@ pipeline {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'mongodb-atlas-creds', usernameVariable: 'MONGO_USERNAME', passwordVariable: 'MONGO_PASSWORD')]) {
                     sh '''
-                        docker run --rm \
+                        docker run --rm --dns 8.8.8.8 \
                             -v "${WORKSPACE}:/app:z" \
                             -v "${WORKSPACE}/.npm:/tmp/npm:z" \
                             -w /app \
@@ -104,7 +104,7 @@ pipeline {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'mongodb-atlas-creds', usernameVariable: 'MONGO_USERNAME', passwordVariable: 'MONGO_PASSWORD')]) {
                     sh '''
-                        docker run --rm \
+                        docker run --rm --dns 8.8.8.8 \
                             -v "${WORKSPACE}:/app:z" \
                             -v "${WORKSPACE}/.npm:/tmp/npm:z" \
                             -w /app \
