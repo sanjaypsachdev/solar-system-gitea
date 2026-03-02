@@ -4,6 +4,7 @@ pipeline {
     environment {
         NPM_CONFIG_CACHE = "${WORKSPACE}/.npm"
         NVD_DATA_DIR = '/home/jenkins/dependency-check-data'
+        MONGO_URI = 'mongodb+srv://cluster0.hn6gp.mongodb.net/superData'
     }
 
     stages {
@@ -62,7 +63,7 @@ pipeline {
                             stopBuild: true
                         )
 
-                        junit allowEmptyResults: true, stdioRetention: '', testResults: 'Dependency-check-junit.xml'
+                        junit allowEmptyResults: true, stdioRetention: '', testResults: 'dependency-check-junit.xml'
 
                         publishHTML([
                             allowMissing: true, 
@@ -74,6 +75,16 @@ pipeline {
                             reportTitles: '', 
                             useWrapperFileDirectly: true
                         ])
+                    }
+                }
+                stage('Unit Testing') {
+                    steps {
+                        withCredentials([usernamePassword(credentialsId: 'mongodb-atlas-creds', usernameVariable: 'MONGO_USERNAME', passwordVariable: 'MONGO_PASSWORD')]) { 
+                            sh '''
+                                npm test
+                            '''
+                        }
+                        junit allowEmptyResults: true, stdioRetention: '', testResults: 'test-results.xml'
                     }
                 }
             }
