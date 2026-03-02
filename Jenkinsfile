@@ -3,7 +3,7 @@ pipeline {
         docker {
             image 'node:18-alpine3.17'
             args '-v /usr/app/node_modules:/usr/app/node_modules'
-            label 'worker'
+            label 'worker1'
         }
     }
 
@@ -30,7 +30,7 @@ pipeline {
                 }
 
                 stage('OWASP Dependency Check') {
-                    agent { label 'worker' }
+                    agent { label 'worker1' }
                     steps {
                         withCredentials([string(credentialsId: 'nvd-api-key', variable: 'NVD_API_KEY')]) {
                             sh '''
