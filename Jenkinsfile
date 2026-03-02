@@ -1,18 +1,26 @@
 pipeline {
-    agent {
-        docker {
-            image 'node:18-alpine3.17'
-            args '-v /usr/app/node_modules:/usr/app/node_modules'
-            label 'worker1'
-        }
-    }
+    agent none
 
     environment {
         NPM_CONFIG_CACHE = "${WORKSPACE}/.npm"
     }
 
     stages {
+        stage('Checkout') {
+            agent { label 'worker1' }
+            steps {
+                checkout scm
+            }
+        }
+
         stage('Installing Dependencies') {
+            agent {
+                docker {
+                    image 'node:18-alpine3.17'
+                    args '-v /usr/app/node_modules:/usr/app/node_modules'
+                    label 'worker1'
+                }
+            }
             steps {
                 sh 'npm install --no-audit'
             }
@@ -21,6 +29,12 @@ pipeline {
         stage('Dependency Scanning') {
             parallel {
                 stage('NPM Dependency Audit') {
+                    agent {
+                        docker {
+                            image 'node:18-alpine3.17'
+                            label 'worker1'
+                        }
+                    }
                     steps {
                         sh '''
                             npm audit --audit-level=critical
@@ -64,6 +78,5 @@ pipeline {
                 }
             }
         }
-
     }
 }
