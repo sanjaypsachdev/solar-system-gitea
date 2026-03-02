@@ -2,14 +2,13 @@ pipeline {
     agent {
         docker {
             image 'node:18-alpine3.17'
-            args '-v /var/run/docker.sock:/var/run/docker.sock -v /usr/app/node_modules:/usr/app/node_modules'
-            label 'worker1'
+            args '-v /usr/app/node_modules:/usr/app/node_modules'
+            label 'worker'
         }
     }
 
     environment {
         NPM_CONFIG_CACHE = "${WORKSPACE}/.npm"
-        NVD_DATA_DIR = '/home/jenkins/dependency-check-data'
     }
 
     stages {
@@ -23,35 +22,27 @@ pipeline {
             parallel {
                 stage('NPM Dependency Audit') {
                     steps {
-                        sh 'npm audit --audit-level=critical'
+                        sh '''
+                            npm audit --audit-level=critical
+                            echo $?
+                        '''
                     }
                 }
 
                 stage('OWASP Dependency Check') {
                     agent { label 'worker1' }
                     steps {
-                        withCredentials([string(credentialsId: 'nvd-api-key', variable: 'NVD_API_KEY')]) {
-                            sh '''
-                                set -e
-                                apk add --no-cache docker-cli
-                                echo "Starting OWASP Dependency Check (NVD cache: ${NVD_DATA_DIR})..."
-                                docker run --rm \
-                                    -u $(id -u):$(id -g) \
-                                    -v "${WORKSPACE}:/src:z" \
-                                    -v "${NVD_DATA_DIR}:/usr/share/dependency-check/data:z" \
-                                    -e NVD_API_KEY="${NVD_API_KEY}" \
-                                    owasp/dependency-check:latest \
-                                    --scan /src \
-                                    --project "Solar System" \
-                                    --format ALL \
-                                    --out /src \
-                                    --log /src/dependency-check.log \
-                                    --prettyPrint \
-                                    --nvdApiKey "${NVD_API_KEY}"
-                                echo "OWASP Dependency Check completed. Log excerpt:"
-                                tail -80 dependency-check.log
-                            '''
-                        }
+                        // NVD API key from Jenkins credential ID 'nvd-api-key' (Secret text)
+                        dependencyCheck(
+                            additionalArguments: '''
+                                --scan \'./\'
+                                --out \'./\'
+                                --format \'ALL\'
+                                --prettyPrint''',
+                            odcInstallation: 'OWASP-DepCheck-12',
+                            nvdCredentialsId: 'nvd-api-key'
+                        )
+
                         dependencyCheckPublisher(
                             failedTotalCritical: 1,
                             pattern: 'dependency-check-report.xml',
@@ -61,5 +52,6 @@ pipeline {
                 }
             }
         }
+
     }
 }
