@@ -1,26 +1,19 @@
 pipeline {
-    agent none
+    agent {
+        docker {
+            image 'node:18-alpine3.17'
+            args '-v /var/run/docker.sock:/var/run/docker.sock -v /usr/app/node_modules:/usr/app/node_modules'
+            label 'worker1'
+        }
+    }
 
     environment {
         NPM_CONFIG_CACHE = "${WORKSPACE}/.npm"
+        NVD_DATA_DIR = '/home/jenkins/dependency-check-data'
     }
 
     stages {
-        stage('Checkout') {
-            agent { label 'worker1' }
-            steps {
-                checkout scm
-            }
-        }
-
         stage('Installing Dependencies') {
-            agent {
-                docker {
-                    image 'node:18-alpine3.17'
-                    args '-v /usr/app/node_modules:/usr/app/node_modules'
-                    label 'worker1'
-                }
-            }
             steps {
                 sh 'npm install --no-audit'
             }
@@ -29,29 +22,18 @@ pipeline {
         stage('Dependency Scanning') {
             parallel {
                 stage('NPM Dependency Audit') {
-                    agent {
-                        docker {
-                            image 'node:18-alpine3.17'
-                            label 'worker1'
-                        }
-                    }
                     steps {
-                        sh '''
-                            npm audit --audit-level=critical
-                            echo $?
-                        '''
+                        sh 'npm audit --audit-level=critical'
                     }
                 }
 
                 stage('OWASP Dependency Check') {
-                    agent { label 'worker1' }
                     steps {
                         withCredentials([string(credentialsId: 'nvd-api-key', variable: 'NVD_API_KEY')]) {
                             sh '''
                                 set -e
-                                NVD_DATA_DIR="${NVD_DATA_DIR:-$HOME/dependency-check-data}"
-                                mkdir -p "$NVD_DATA_DIR"
-                                echo "Starting OWASP Dependency Check (first run may take 15-30 min for NVD update; data cached in $NVD_DATA_DIR)..."
+                                apk add --no-cache docker-cli
+                                echo "Starting OWASP Dependency Check (NVD cache: ${NVD_DATA_DIR})..."
                                 docker run --rm \
                                     -u $(id -u):$(id -g) \
                                     -v "${WORKSPACE}:/src:z" \
