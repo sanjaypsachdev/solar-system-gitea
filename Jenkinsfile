@@ -16,7 +16,7 @@ pipeline {
                         -v "${WORKSPACE}/.npm:/tmp/npm:z" \
                         -w /app \
                         -e NPM_CONFIG_CACHE=/tmp/npm \
-                        node:18-alpine3.17 \
+                        node:18-slim \
                         npm install --no-audit
                 '''
             }
@@ -32,7 +32,7 @@ pipeline {
                                 -v "${WORKSPACE}/.npm:/tmp/npm:z" \
                                 -w /app \
                                 -e NPM_CONFIG_CACHE=/tmp/npm \
-                                node:18-alpine3.17 \
+                                node:18-slim \
                                 sh -c "npm audit --audit-level=critical"
                         '''
                     }
@@ -93,7 +93,7 @@ pipeline {
                             -e MONGO_URI="${MONGO_URI}" \
                             -e MONGO_USERNAME="${MONGO_USERNAME}" \
                             -e MONGO_PASSWORD="${MONGO_PASSWORD}" \
-                            node:18-alpine3.17 \
+                            node:18-slim \
                             sh -c "npm test"
                     """
                 }
@@ -114,7 +114,7 @@ pipeline {
                             -e MONGO_URI="${MONGO_URI}" \
                             -e MONGO_USERNAME="${MONGO_USERNAME}" \
                             -e MONGO_PASSWORD="${MONGO_PASSWORD}" \
-                            node:18-alpine3.17 \
+                            node:18-slim \
                             sh -c "npm run coverage"
                     """
                 }
