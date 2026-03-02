@@ -30,18 +30,24 @@ pipeline {
                 }
 
                 stage('OWASP Dependency Check') {
+                    agent {
+                        docker {
+                            image 'owasp/dependency-check:latest'
+                            label 'worker'
+                        }
+                    }
                     steps {
-                        // NVD API key from Jenkins credential ID 'nvd-api-key' (Secret text)
-                        dependencyCheck(
-                            additionalArguments: '''
-                                --scan \'./\'
-                                --out \'./\'
-                                --format \'ALL\'
-                                --prettyPrint''',
-                            odcInstallation: 'OWASP-DepCheck-12',
-                            nvdCredentialsId: 'nvd-api-key'
-                        )
-
+                        withCredentials([string(credentialsId: 'nvd-api-key', variable: 'NVD_API_KEY')]) {
+                            sh '''
+                                /usr/share/dependency-check/bin/dependency-check.sh \
+                                    --scan . \
+                                    --project "Solar System" \
+                                    --format ALL \
+                                    --out . \
+                                    --prettyPrint \
+                                    --nvdApiKey "$NVD_API_KEY"
+                            '''
+                        }
                         dependencyCheckPublisher(
                             failedTotalCritical: 1,
                             pattern: 'dependency-check-report.xml',
