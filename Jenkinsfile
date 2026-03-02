@@ -4,7 +4,7 @@ pipeline {
     environment {
         NPM_CONFIG_CACHE = "${WORKSPACE}/.npm"
         NVD_DATA_DIR = '/home/jenkins/dependency-check-data'
-        MONGO_URI = 'mongodb+srv://cluster0.hn6gp.mongodb.net/superData'
+        MONGO_URI = 'mongodb+srv://cluster0.hn6gp.mongodb.net/superData?appName=Cluster0'
     }
 
     stages {
@@ -63,7 +63,7 @@ pipeline {
                             stopBuild: true
                         )
 
-                        junit allowEmptyResults: true, stdioRetention: '', testResults: 'dependency-check-junit.xml'
+                        junit allowEmptyResults: true, testResults: 'dependency-check-junit.xml'
 
                         publishHTML([
                             allowMissing: true, 
