@@ -13,7 +13,6 @@ pipeline {
             steps {
                 sh '''
                     docker run --rm \
-                        --dns ${AWS_DNS} \
                         -v "${WORKSPACE}:/app:z" \
                         -v "${WORKSPACE}/.npm:/tmp/npm:z" \
                         -w /app \
@@ -30,13 +29,12 @@ pipeline {
                     steps {
                         sh '''
                             docker run --rm \
-                                --dns ${AWS_DNS} \
                                 -v "${WORKSPACE}:/app:z" \
                                 -v "${WORKSPACE}/.npm:/tmp/npm:z" \
                                 -w /app \
                                 -e NPM_CONFIG_CACHE=/tmp/npm \
                                 node:18-alpine3.17 \
-                                sh -c "npm install --no-audit && npm audit --audit-level=critical"
+                                sh -c "npm audit --audit-level=critical"
                         '''
                     }
                 }
@@ -88,6 +86,7 @@ pipeline {
                 withCredentials([usernamePassword(credentialsId: 'mongodb-atlas-creds', usernameVariable: 'MONGO_USERNAME', passwordVariable: 'MONGO_PASSWORD')]) {
                     sh '''
                         docker run --rm \
+                            --dns ${AWS_DNS} \
                             -v "${WORKSPACE}:/app:z" \
                             -v "${WORKSPACE}/.npm:/tmp/npm:z" \
                             -w /app \
@@ -108,6 +107,7 @@ pipeline {
                 withCredentials([usernamePassword(credentialsId: 'mongodb-atlas-creds', usernameVariable: 'MONGO_USERNAME', passwordVariable: 'MONGO_PASSWORD')]) {
                     sh '''
                         docker run --rm \
+                            --dns ${AWS_DNS} \
                             -v "${WORKSPACE}:/app:z" \
                             -v "${WORKSPACE}/.npm:/tmp/npm:z" \
                             -w /app \
