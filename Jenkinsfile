@@ -5,6 +5,7 @@ pipeline {
         NPM_CONFIG_CACHE = "${WORKSPACE}/.npm"
         NVD_DATA_DIR = '/home/jenkins/dependency-check-data'
         MONGO_URI = 'mongodb+srv://cluster0.hn6gp.mongodb.net/superData?appName=Cluster0'
+        AWS_DNS = '172.31.0.2'
     }
 
     stages {
@@ -12,6 +13,7 @@ pipeline {
             steps {
                 sh '''
                     docker run --rm \
+                        --dns ${AWS_DNS} \
                         -v "${WORKSPACE}:/app:z" \
                         -v "${WORKSPACE}/.npm:/tmp/npm:z" \
                         -w /app \
@@ -28,6 +30,7 @@ pipeline {
                     steps {
                         sh '''
                             docker run --rm \
+                                --dns ${AWS_DNS} \
                                 -v "${WORKSPACE}:/app:z" \
                                 -v "${WORKSPACE}/.npm:/tmp/npm:z" \
                                 -w /app \
@@ -84,7 +87,7 @@ pipeline {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'mongodb-atlas-creds', usernameVariable: 'MONGO_USERNAME', passwordVariable: 'MONGO_PASSWORD')]) {
                     sh '''
-                        docker run --rm --dns 8.8.8.8 \
+                        docker run --rm \
                             -v "${WORKSPACE}:/app:z" \
                             -v "${WORKSPACE}/.npm:/tmp/npm:z" \
                             -w /app \
@@ -104,7 +107,7 @@ pipeline {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'mongodb-atlas-creds', usernameVariable: 'MONGO_USERNAME', passwordVariable: 'MONGO_PASSWORD')]) {
                     sh '''
-                        docker run --rm --dns 8.8.8.8 \
+                        docker run --rm \
                             -v "${WORKSPACE}:/app:z" \
                             -v "${WORKSPACE}/.npm:/tmp/npm:z" \
                             -w /app \
