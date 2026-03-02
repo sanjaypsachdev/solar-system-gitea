@@ -28,6 +28,7 @@ pipeline {
                 }
 
                 stage('OWASP Dependency Check') {
+                    agent { label 'worker1' }
                     steps {
                         withCredentials([string(credentialsId: 'nvd-api-key', variable: 'NVD_API_KEY')]) {
                             sh '''
