@@ -62,6 +62,8 @@ pipeline {
                             stopBuild: true
                         )
 
+                        junit allowEmptyResults: true, stdioRetention: '', testResults: 'Dependency-check-junit.xml'
+
                         publishHTML([
                             allowMissing: true, 
                             alwaysLinkToLastBuild: true, 
